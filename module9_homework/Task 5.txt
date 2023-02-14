@@ -1,0 +1,155 @@
+HTML
+
+<body>
+<label class="name" for="input1">Номер страницы</label><br>
+<input class ="input1" type="number" placeholder="Введите любое число">
+<label class="name" for="input2">Лимит</label><br>
+<input class ="input2" type="number" placeholder="Введите любое число">
+<button type="submit" class="button">Запрос</button>
+<div class="result"></div>
+</body>
+_____________________________________
+
+CSS
+
+body {
+    display: flex;    
+    flex-direction: column;
+    background-color: #DAA520;
+    align-items: center;
+}
+.name{
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 30px;  
+  color: #000080; 
+  text-align: center;
+}
+input {
+  display: block;
+  padding: 10px 10px;
+  border-radius: 5px;
+}
+
+.input::placeholder {
+    color: #C0C0C0;   
+  }
+
+button {
+  margin: 20px 0;
+  display: block;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  padding: 15px 65px; 
+  background-color:#4682B4;
+  border: 0px;
+  border-radius: 5px;
+  cursor: pointer;
+  } 
+button:hover {
+  background: #00CED1;
+}
+.result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;   
+}
+.card {
+  width: 200px;
+  margin: 20px;
+}
+
+.card-image {
+  display: block;
+  width: 200px;
+  height: 150px;
+}
+
+______________________________________
+
+JS
+
+  const btnNode = document.querySelector('button');
+ const resultNode = document.querySelector('.result');
+ const input1Node = document.querySelector('.input1');
+ const input2Node = document.querySelector('.input2');
+ 
+   btnNode.addEventListener('click', () => { 
+     let value1 = document.querySelector('.input1').value; 
+     let value2 = document.querySelector('.input2').value;  
+     
+     if (value1 >= 1 && value1 <= 10 && value2 >= 1 && value2 <= 10) {
+    useRequest(`https://picsum.photos/v2/list?page=${value1}&limit=${value2}`, displayResult);
+        } else if (value1 >= 1 && value1 <= 10 && (value2 < 1 || value2 > 10 || !isNaN(value2))) {
+            const error_of_input1 = `
+            <div class="card">
+            <p>Лимит вне диапазона от 1 до 10</p>
+            </div>`;
+            resultNode.innerHTML = error_of_input1
+        } else if ((value2 >= 1 && value2 <= 10) && (value1 < 1 || value1 > 10 || !isNaN(value1))) {
+            const error_of_input2 = `
+            <div class="card">
+            <p>Номер страницы вне диапазона от 1 до 10</p>
+            </div>`;
+            resultNode.innerHTML = error_of_input2
+        } else {
+            const error = `
+            <div class="card">
+            <p>Номер страницы и лимит вне диапазона от 1 до 10</p>
+            </div>`;
+            resultNode.innerHTML = error
+        }
+    });
+      function useRequest(url, callback) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', url); 
+        xhr.onload = function () { 
+            if (xhr.status != 200) {
+            console.log('Статус ответа: ', xhr.status);
+            } else {
+              localStorage.setItem('data', xhr.response)
+                const result = JSON.parse(xhr.response);
+                if (callback) {
+                    callback(result);
+                }
+            }
+        };
+        xhr.onerror = function () { 
+            console.log('Ошибка! Статус ответа: ', xhr.status);
+        };
+        xhr.send();
+    };
+
+    function displayResult(apiData) { 
+      let cards = '';
+        apiData.forEach(item => {
+      const cardBlock = `
+    <div class="card">
+      <img
+        src="${item.download_url}"
+        class="card-image"
+      />
+      <p>${item.author}</p>
+    </div>
+  `;
+      cards += cardBlock;
+  });
+        resultNode.innerHTML = cards;     
+   };      
+    
+   const localData = localStorage.getItem('data');
+    if (localData) {
+    initImages(JSON.parse(localData));
+ }
+  async function initImages(data) {
+    for (item of data) {
+        let img = document.createElement('img');
+        img.setAttribute('src', item.download_url);
+        img.setAttribute('width', '200');
+        const btnNode = document.querySelector('button');
+        resultNode.innerHTML = "";
+        setTimeout(() => {
+            resultNode.append(img);
+        });
+    }
+ }
